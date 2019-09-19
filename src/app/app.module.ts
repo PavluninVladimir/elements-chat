@@ -1,16 +1,23 @@
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
-
-import { AppComponent } from './app.component';
+import { createCustomElement } from '@angular/elements';
+import { NgModule, Injector } from '@angular/core';
+import { ChatsComponent } from './chats/chats.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    ChatsComponent,
   ],
   imports: [
     BrowserModule
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  entryComponents: [ChatsComponent]
 })
-export class AppModule { }
+export class AppModule {
+  constructor(private injector: Injector) {
+    const customButton = createCustomElement(ChatsComponent, { injector });
+    customElements.define('mi-element-chats', customButton);
+  }
+
+  ngDoBootstrap() {}
+ }
