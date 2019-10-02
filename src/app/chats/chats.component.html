@@ -1,6 +1,18 @@
-<form class="example-form" [formGroup]="form" >
-  <mat-form-field>
-        <input matInput placeholder="Placeholder">
-        <mat-icon matSuffix>sentiment_very_satisfied</mat-icon>
-  </mat-form-field>
-</form>
+<mat-card>
+  <h2>Чат</h2>
+  <mat-list>
+      <mat-list-item>Item 1</mat-list-item>
+      <mat-list-item>Item 2</mat-list-item>
+      <mat-list-item>Item 3</mat-list-item>
+    </mat-list>
+  <form class="example-form" [formGroup]="form">
+    <div class="input-message">
+      <mat-form-field>
+        <input matInput placeholder="Сообщение" />
+      </mat-form-field>
+      <button mat-mini-fab aria-label="Example icon-button with a heart icon">
+        <mat-icon>send</mat-icon>
+      </button>
+    </div>
+  </form>
+</mat-card>
