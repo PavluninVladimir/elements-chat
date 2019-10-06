@@ -1,8 +1,7 @@
 import { Injectable, OnDestroy, Inject } from '@angular/core';
-import { Observable, SubscriptionLike, Subject, Observer, interval } from 'rxjs';
+import { Observable, SubscriptionLike, Subject, Observer, interval, BehaviorSubject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
-
 import { share, distinctUntilChanged, takeWhile } from 'rxjs/operators';
 import { IWebsocketService, IWsMessage, WebSocketConfig } from './websocket.interfaces';
 import { config } from './websocket.config';
@@ -30,48 +29,49 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
 
     public status: Observable<boolean>;
 
-    constructor(@Inject(config) private wsConfig: WebSocketConfig) {
+    constructor(@Inject(config) private wsConfig: BehaviorSubject<WebSocketConfig>) {
         this.wsMessages$ = new Subject<IWsMessage<any>>();
+        wsConfig.subscribe((s: WebSocketConfig) => {
+            this.reconnectInterval = s.reconnectInterval || 5000; // pause between connections
+            this.reconnectAttempts = s.reconnectAttempts || 10; // number of connection attempts
 
-        this.reconnectInterval = wsConfig.reconnectInterval || 5000; // pause between connections
-        this.reconnectAttempts = wsConfig.reconnectAttempts || 10; // number of connection attempts
-
-        this.config = {
-            url: wsConfig.url,
-            closeObserver: {
-                next: (event: CloseEvent) => {
-                    this.websocket$ = null;
-                    this.connection$.next(false);
+            this.config = {
+                url: s.url,
+                closeObserver: {
+                    next: (event: CloseEvent) => {
+                        this.websocket$ = null;
+                        this.connection$.next(false);
+                    }
+                },
+                openObserver: {
+                    next: (event: Event) => {
+                        console.log('WebSocket connected!');
+                        this.connection$.next(true);
+                    }
                 }
-            },
-            openObserver: {
-                next: (event: Event) => {
-                    console.log('WebSocket connected!');
-                    this.connection$.next(true);
-                }
-            }
-        };
+            };
 
-        // connection status
-        this.status = new Observable<boolean>((observer) => {
-            this.connection$ = observer;
-        }).pipe(share(), distinctUntilChanged());
+            // connection status
+            this.status = new Observable<boolean>((observer) => {
+                this.connection$ = observer;
+            }).pipe(share(), distinctUntilChanged());
 
-        // run reconnect if not connection
-        this.statusSub = this.status
-            .subscribe((isConnected) => {
-                this.isConnected = isConnected;
+            // run reconnect if not connection
+            this.statusSub = this.status
+                .subscribe((isConnected) => {
+                    this.isConnected = isConnected;
 
-                if (!this.reconnection$ && typeof(isConnected) === 'boolean' && !isConnected) {
-                    this.reconnect();
-                }
-            });
+                    if (!this.reconnection$ && typeof(isConnected) === 'boolean' && !isConnected) {
+                        this.reconnect();
+                    }
+                });
 
-        this.websocketSub = this.wsMessages$.subscribe(
-            null, (error: ErrorEvent) => console.error('WebSocket error!', error)
-        );
+            this.websocketSub = this.wsMessages$.subscribe(
+                null, (error: ErrorEvent) => console.error('WebSocket error!', error)
+            );
 
-        this.connect();
+            this.connect();
+        });
     }
 
     ngOnDestroy() {

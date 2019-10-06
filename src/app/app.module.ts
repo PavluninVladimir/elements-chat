@@ -3,7 +3,7 @@ import { createCustomElement } from '@angular/elements';
 import { NgModule, Injector } from '@angular/core';
 import { ChatsComponent } from './chats/chats.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { WebsocketModule } from './chats/websocket';
+import { WebsocketModule, config, WebSocketConfig } from './chats/websocket';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,8 +12,9 @@ import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import {MatCardModule} from '@angular/material/card';
 import {MatDividerModule} from '@angular/material/divider';
 import {MatListModule} from '@angular/material/list';
+import { BehaviorSubject } from 'rxjs';
 
-import { CustomIconRegistry } from './custom-icon-registry';
+// import { CustomIconRegistry } from './custom-icon-registry';
 
 @NgModule({
   exports: [
@@ -30,9 +31,7 @@ import { CustomIconRegistry } from './custom-icon-registry';
   imports: [
     BrowserModule,
     ReactiveFormsModule,
-    WebsocketModule.config({
-        url: 'ws://localhost:8080'
-    }),
+    WebsocketModule,
     BrowserAnimationsModule,
     MatInputModule,
     MatButtonModule,
@@ -42,14 +41,16 @@ import { CustomIconRegistry } from './custom-icon-registry';
     MatDividerModule,
     MatListModule,
   ],
-  providers: [MatIconRegistry],
+  providers: [MatIconRegistry,
+    { provide: config, useValue: new BehaviorSubject<WebSocketConfig>({url: ''})}
+  ],
   entryComponents: [ChatsComponent]
 })
 export class AppModule {
   constructor(private injector: Injector, public matIconRegistry: MatIconRegistry) {
     matIconRegistry.registerFontClassAlias('fontawesome', 'fa');
-    const customButton = createCustomElement(ChatsComponent, { injector });
-    customElements.define('mi-element-chats', customButton);
+    const elementChats = createCustomElement(ChatsComponent, { injector });
+    customElements.define('mi-element-chats', elementChats);
   }
 
   ngDoBootstrap() {}
