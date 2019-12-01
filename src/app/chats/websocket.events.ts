@@ -6,6 +6,7 @@ export const WS = {
     },
     SEND: {
         SEND_TEXT: 'events',
+        FIND_ALL_MESSAGE: 'findAll',
         REMOVE_TEXT: 'remove-text'
     }
 };

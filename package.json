@@ -28,7 +28,9 @@
     "core-js": "^2.5.4",
     "document-register-element": "^1.7.2",
     "hammerjs": "^2.0.8",
+    "ngx-ui-scroll": "^1.2.0",
     "rxjs": "~6.3.3",
+    "shortid": "^2.2.15",
     "ws": "^7.1.2",
     "zone.js": "~0.8.26"
   },
@@ -40,6 +42,8 @@
     "@types/jasmine": "~2.8.8",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
+    "@types/shortid": "0.0.29",
+    "@types/uniqid": "^4.1.3",
     "codelyzer": "~4.5.0",
     "concat": "^1.0.3",
     "jasmine-core": "~2.99.1",
