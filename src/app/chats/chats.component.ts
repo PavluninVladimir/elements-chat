@@ -41,9 +41,8 @@ export class ChatsComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.wsConfig.next({ url: this.urlServer});
+    this.wsConfig.next({ url: this.urlServer });
     this.userName = Shortid.generate();
-
     this.datasource = new Datasource({
       get: (index, count) => {
         return this.getDataObservable(index, count);
@@ -63,6 +62,9 @@ export class ChatsComponent implements OnInit {
     this.messages$.subscribe(r => {
       this.sbj.next(r);
       this.datasource.adapter.reload(r.length > 6 ? r.length : 0);
+      if (r[r.length - 1].user !== this.userName) {
+        this.notifyMe(r[r.length - 1].text);
+      }
     });
     // get texts
     this.wsService.status.pipe(filter(connect => connect)).subscribe(() => {
@@ -81,8 +83,8 @@ export class ChatsComponent implements OnInit {
 
   getDataObservable(index: number, count: number): Observable<any> {
     return this.sbj.pipe(map(x => {
-      if (Array.isArray(x)) {  
-        const start = index-1;
+      if (Array.isArray(x)) {
+        const start = index - 1;
         const end = index + count - 1;
         return x.slice(start, end);
       }
@@ -93,18 +95,29 @@ export class ChatsComponent implements OnInit {
     this.wsService.send(WS.SEND.REMOVE_TEXT, index);
   }
 
-  public notifyMe() {
+  public notifyMe(mess: string) {
+    Notification.requestPermission(function (permission) {
+      // Если пользователь разрешил, то создаем уведомление
+      if (permission === 'granted') {
+        const notification = new Notification("Новое сообщение!", options);
+      }
+    });
+    console.log(Notification.requestPermission().then(r => console.log(r)))
     // Проверка поддержки браузером уведомлений
+    var options = {
+      body: mess,
+      icon: 'https://my-infant.com/Content/images/logoZayka.png',
+    };
     if (!('Notification' in window)) {
       alert('This browser does not support desktop notification');
     } else if (Notification.permission === 'granted') {
       // Если разрешено, то создаем уведомление
-      const notification = new Notification('Появилось новое сообщение!');
+      const notification = new Notification("Новое сообщение!", options);
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission(function (permission) {
         // Если пользователь разрешил, то создаем уведомление
         if (permission === 'granted') {
-          const notification = new Notification('Появилось новое сообщение!');
+          const notification = new Notification("Новое сообщение!", options);
         }
       });
     }
