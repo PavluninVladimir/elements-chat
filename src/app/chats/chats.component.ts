@@ -26,6 +26,7 @@ export class ChatsComponent implements OnInit {
   form: FormGroup;
   sbj = new BehaviorSubject<IMessage[]>(undefined);
   datasource: IDatasource;
+  currentData: string;
 
   private messages$: Observable<IMessage[]>;
   private counter$: Observable<number>;
@@ -62,9 +63,11 @@ export class ChatsComponent implements OnInit {
     this.messages$.subscribe(r => {
       this.sbj.next(r);
       this.datasource.adapter.reload(r.length > 6 ? r.length : 0);
-      if (r[r.length - 1].user !== this.userName) {
+      if (r[r.length - 1].user !== this.userName 
+        && this.currentData !== JSON.stringify(r)) {
         this.notifyMe(r[r.length - 1].text);
       }
+      this.currentData = JSON.stringify(r)
     });
     // get texts
     this.wsService.status.pipe(filter(connect => connect)).subscribe(() => {
